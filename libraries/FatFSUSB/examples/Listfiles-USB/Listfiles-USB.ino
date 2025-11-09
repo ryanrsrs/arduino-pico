@@ -61,6 +61,8 @@ void loop() {
   if (updated && !driveConnected) {
     inPrinting = true;
     Serial.println("\n\nDisconnected, new file listing:");
+    FatFS.end();
+    FatFS.begin();
     printDirectory("/", 0);
     updated = false;
     inPrinting = false;
@@ -76,7 +78,7 @@ void printDirectory(String dirName, int numTabs) {
       // no more files
       break;
     }
-    for (uint8_t i = 0; i < numTabs; i++) {
+    for (int i = 0; i < numTabs; i++) {
       Serial.print('\t');
     }
     Serial.print(dir.fileName());
@@ -88,8 +90,9 @@ void printDirectory(String dirName, int numTabs) {
       Serial.print("\t\t");
       Serial.print(dir.fileSize(), DEC);
       time_t cr = dir.fileCreationTime();
-      struct tm* tmstruct = localtime(&cr);
-      Serial.printf("\t%d-%02d-%02d %02d:%02d:%02d\n", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour, tmstruct->tm_min, tmstruct->tm_sec);
+      struct tm tmstruct;
+      localtime_r(&cr, &tmstruct);
+      Serial.printf("\t%d-%02d-%02d %02d:%02d:%02d\n", (tmstruct.tm_year) + 1900, (tmstruct.tm_mon) + 1, tmstruct.tm_mday, tmstruct.tm_hour, tmstruct.tm_min, tmstruct.tm_sec);
     }
   }
 }

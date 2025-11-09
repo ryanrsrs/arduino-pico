@@ -22,14 +22,12 @@
 
 #include <Arduino.h>
 #include "api/HardwareSerial.h"
-#include <stdarg.h>
-#include <queue>
 #include "CoreMutex.h"
 
 extern "C" typedef struct uart_inst uart_inst_t;
 
 #define UART_PIN_NOT_DEFINED      (255u)
-class SerialUART : public HardwareSerial {
+class SerialUART : public arduino::HardwareSerial {
 public:
     SerialUART(uart_inst_t *uart, pin_size_t tx, pin_size_t rx, pin_size_t rts = UART_PIN_NOT_DEFINED, pin_size_t cts = UART_PIN_NOT_DEFINED);
 
@@ -95,6 +93,11 @@ public:
     // on read)
     bool getBreakReceived();
 
+    // Returns the baud rate the uart is actually operating at vs the desired baud rate specified to begin()
+    int getActualBaud() {
+        return _running ? _actualBaud : 0;
+    }
+
 private:
     bool _running = false;
     uart_inst_t *_uart;
@@ -102,6 +105,7 @@ private:
     pin_size_t _rts, _cts;
     gpio_function_t _fcnTx, _fcnRx, _fcnRts, _fcnCts;
     int _baud;
+    int _actualBaud;
     mutex_t _mutex;
     bool _polling = false;
     bool _overflow;
